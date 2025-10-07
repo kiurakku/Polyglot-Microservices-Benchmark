@@ -1,0 +1,20 @@
+# General
+.DS_Store
+*.log
+
+# Go
+*.exe
+*.test
+*.out
+/bin/
+/dist/
+
+# Rust
+/services/*-rust/target/
+
+# Elixir
+/_build/
+/deps/
+erl_crash.dump
+.elixir_ls/
+

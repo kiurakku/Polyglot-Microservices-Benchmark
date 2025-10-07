@@ -1,0 +1,40 @@
+version: "3.8"
+services:
+  nats:
+    image: nats:2.10-alpine
+    ports:
+      - "4222:4222"
+    command: ["-js"]
+
+  api:
+    build: ./services/api-go
+    environment:
+      - NATS_URL=nats://nats:4222
+    ports:
+      - "8080:8080"
+    depends_on:
+      - nats
+
+  compute:
+    build: ./services/compute-rust
+    environment:
+      - NATS_URL=nats://nats:4222
+    depends_on:
+      - nats
+
+  processor:
+    build: ./services/processor-elixir
+    environment:
+      - NATS_URL=nats://nats:4222
+    ports:
+      - "4000:4000"
+    depends_on:
+      - nats
+
+  db:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_PASSWORD=example
+    ports:
+      - "5432:5432"
+
