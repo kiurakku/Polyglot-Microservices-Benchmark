@@ -1,113 +1,61 @@
-Polyglot Microservices Benchmark
+# Polyglot Microservices Benchmark
 
-Навчальний та демонстраційний проєкт, який показує, як Go, Rust і Elixir можуть співпрацювати в мікросервісній архітектурі. Включає приклад із Docker Compose для локального підняття.
+An educational and demo project showing how **Go**, **Rust**, and **Elixir** can work together in a microservice architecture.  
+Includes a **Docker Compose** example for local deployment.
 
-Мета
+---
 
-показати pattern’и обміну повідомленнями між сервісами;
+## 🧠 Purpose
 
-порівняти продуктивність/затримки між мовами для типових завдань;
+- Demonstrate messaging patterns between services.  
+- Compare performance/latency across languages for common workloads.  
+- Provide a hands-on learning example for developers.
 
-дати навчальний приклад для розробників.
+---
 
-Компоненти
+## 🧩 Components
 
-API Gateway (Go) — приймає HTTP-запити, маршрутизує в чергу.
+- **API Gateway (Go)** — handles HTTP requests and routes them to the message queue.  
+- **Compute Service (Rust)** — performs CPU-bound and IO-bound computations.  
+- **Event Processor (Elixir)** — processes real-time events and aggregates results.  
+- **Message Broker** — *NATS* or *Kafka* (used for pub/sub demonstration).  
+- **Database** — *Postgres* or *Redis* for result storage.
 
-Compute Service (Rust) — виконує CPU-bound/IO-bound обчислення.
+---
 
-Event Processor (Elixir) — обробляє події у реальному часі, агрегує результат.
+## 🚀 Example Scenario
 
-Message Broker — NATS або Kafka (для демонстрації pub/sub).
+1. The user sends a `POST /tasks` request to the Go API.  
+2. Go pushes the task into NATS.  
+3. The Rust service picks up the task, performs heavy computation (e.g., hashing or parsing), and publishes the result to another topic.  
+4. The Elixir service subscribes to the result events, aggregates them, and pushes updates via WebSocket to the UI.
 
-DB — Postgres або Redis для зберігання результатів.
+---
 
-Приклад сценарію
+## 🐳 Docker Compose (short version)
 
-Користувач робить POST /tasks до Go API.
-
-Go заливає задачу в NATS.
-
-Rust сервіс підбирає задачу, виконує обчислення (наприклад, heavy hashing або парсинг), повертає результат у іншу тему.
-
-Elixir підписаний на результатні події, агрегує їх і пушить обновлення через WebSocket до UI.
-
-Docker Compose (скорочена схема)
+```yaml
 version: "3.8"
 services:
   nats:
     image: nats:latest
     ports: ["4222:4222"]
+
   api:
     build: ./services/api-go
     ports: ["8080:8080"]
     depends_on: ["nats"]
+
   compute:
     build: ./services/compute-rust
     depends_on: ["nats"]
+
   processor:
     build: ./services/processor-elixir
     ports: ["4000:4000"]
     depends_on: ["nats"]
+
   db:
     image: postgres:15
     environment:
       POSTGRES_PASSWORD: example
-
-Приклад API (Go)
-// POST /tasks
-type TaskRequest struct {
-  Input string `json:"input"`
-}
-
-Метрики та бенчмарки
-
-Вимірювати latency від POST до фінального збереження.
-
-Кількість завдань/сек для кожного сервісу.
-
-CPU/RAM usage під навантаженням.
-
-Можна вбудувати Grafana/Prometheus для візуалізації.
-
-Навчальна цінність
-
-Показує, як вибирати мову для певної задачі: Rust для обчислень, Go для API, Elixir для concurrency/real-time.
-
-Демонструє патерни комунікації: pub/sub, request/reply, event sourcing.
-
-Quickstart
-
-Клон:
-
-git clone https://github.com/you/polyglot-benchmark.git
-cd polyglot-benchmark
-
-
-Запусти:
-
-docker-compose up --build
-
-
-curl -X POST http://localhost:8080/tasks -d '{"input":"hello"}' -H "Content-Type: application/json"
-
-Далі (ідеї)
-
-Додати benchmarking suite (wrk/hey) та автоматичний звіт.
-
-Підключити CI для запуску автоматичних тестів та бенчів.
-
-Розширити сценарії: stream processing, ML inference.
-
-Contributing
-
-PR’и вітаються. Окремі папки для кожної мови з доками по локальному запуску та розробці.
-
-License
-
-MIT
-
-Ліцензія та атрибуція
-
-Локальні файли ліцензії для цього підпроєкту: див. `./LICENSE` і `./NOTICE`.
-Обов'язкова атрибуція: автор — Architecture No. 7; модифікатори мають бути вказані.
